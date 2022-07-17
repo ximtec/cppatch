@@ -29,6 +29,8 @@ class task_list{
         ~task_list(){};
 
 
+        
+
         void print_list_id(){
             std::for_each(ready_list.begin(),ready_list.end(), [](link& link){
                 link.task->print();
@@ -40,9 +42,9 @@ class task_list{
             ready_list.sort(compareId);
         };
 
-    void add_ready_task(task &t){
+    void add_ready_task(task* t){
         link new_link;
-        new_link.task = &t;
+        new_link.task = t;
         //TODO Add nbor stuff
         ready_list.push_back(new_link);
     };
@@ -57,4 +59,5 @@ class task_list{
         ready_list.pop_back();
         return task;
     }
+
 };

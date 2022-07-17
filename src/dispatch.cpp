@@ -2,44 +2,38 @@
 #include "lists/task_list.cpp"
 #include "task/patch.cpp"
 
+
+class test{
+    private:
+        int val;
+
+    public:
+    test() { std::cout << "In constructor\n"; val= 5; }
+    ~test() { std::cout << "In destructor\n"; }
+    void print(){std::cout << "test test test " << val << "\n" ;}
+    void init(){val = 5;}
+
+};
+
 int main(int argc, char const *argv[]) {
+
+    //int test = 5;
+
+    patch *t;
     for (int i = 1; i< argc; i++){
         std::cout<<argv[i]<< " ";
     }
     std::cout<<"\n";
 
-    task_list t_l = task_list();
-
-    task t1;; 
-    patch p1;  
-
-    t1.print();
-    p1.print();
-
-    //task *p1_ptr;
-    //p1_ptr = &p1;
-
-
-    t_l.add_ready_task(t1);
-
-    t_l.add_ready_task(p1);
-
-
-    //t_l.print_list_id();
-
-    t_l.print_list_id();
-
-
-    patch *p2_ptr;
-
-    p2_ptr = (patch * ) t_l.pop_back();
+     task_list t_l = task_list();
 
 
 
-    p2_ptr->print();
-    //std::cout<< " " << p1.get_id() << "\n";
+    for (int i = 0; i < 10; i++){
+        t = (patch *)malloc(sizeof(patch));
+        t->init();
+        t_l.add_ready_task(t);
+    }
 
-    //p1.print();
-    //test_list();
-    return 0 ;
+    return 0;
 }
