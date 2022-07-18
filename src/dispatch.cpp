@@ -1,7 +1,7 @@
 #include <iostream>
 #include "lists/task_list.cpp"
 #include "task/patch.cpp"
-
+#include "io/io.cpp"
 
 class test{
     private:
@@ -16,24 +16,30 @@ class test{
 };
 
 int main(int argc, char const *argv[]) {
-
+;
     //int test = 5;
 
-    patch *t;
+//    patch *t;
     for (int i = 1; i< argc; i++){
         std::cout<<argv[i]<< " ";
     }
     std::cout<<"\n";
 
-     task_list t_l = task_list();
+    task_list_t t_l = task_list();
 
-
-
-    for (int i = 0; i < 10; i++){
-        t = (patch *)malloc(sizeof(patch));
-        t->init();
-        t_l.add_ready_task(t);
-    }
+    //io_glob.read_input("input.nml");
+    io_glob.read_regex("input.nml");
+//
+//    for (int i = 0; i < 10; i++){
+//        t = (patch *)malloc(sizeof(patch));
+//        t->init();
+//        t_l.add_ready_task(t);
+//    }
+//
+//    t_l.print_list_id();
+//
+//
+//    t_l.dealloc_list();
 
     return 0;
 }
