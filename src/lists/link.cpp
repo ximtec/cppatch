@@ -1,9 +1,9 @@
 #include "../task/task.cpp"
 #include <list>
 
-struct nbohr{
-    task* me;
-    task* nbor;
+struct nbohr_t{
+    task_t* me;
+    task_t* nbor;
 
 
     bool needed;
@@ -11,8 +11,8 @@ struct nbohr{
 };
 
 
-struct link{
-    task* task;
-    std::list<nbohr> nbohrs;
+struct link_t{
+    task_t* task;
+    std::list<nbohr_t> nbohrs;
 };
 

@@ -4,7 +4,7 @@
 #include <iostream>
 #include <atomic>
 
-class task {
+class task_t {
     protected:
         int _id;
         int curr;
@@ -22,18 +22,17 @@ class task {
         //void print(void);
 
 
-    task(){
+    task_t(){
             std::cout << "Calling constructor for task " << _id <<  "\n";
             this->init();
     }
 
-    ~task(){
+    ~task_t(){
             std::cout << "Calling destructor for task " << _id <<  "\n";
            //delete[] times;
     }
 
     void init(){
-        //static int nr_tasks = 0;
         _id=nr_tasks++;
         std::cout << "initializing task " << _id <<  "\n";
         //time = 0.;
@@ -43,7 +42,6 @@ class task {
 
     void deallocate(){
         std::cout << "deleting task " << _id <<  "\n";
-
         delete [] times;
     }
 
@@ -75,7 +73,7 @@ class task {
        // };
 };
 
-int task::nr_tasks = 0;
+int task_t::nr_tasks = 0;
 
 
 

@@ -1,3 +1,5 @@
+#ifndef __patch
+#define __patch
 #include "task.cpp"
 #include <vector>
 
@@ -14,7 +16,7 @@ struct patch_dim{
     uint   n[3];
 };
 
-class patch : public task{
+class patch_t : public task_t{
     protected:
         patch_dim dims;
 
@@ -22,18 +24,18 @@ class patch : public task{
 
     public: 
 
-    patch(){
+    patch_t(){
         std::cout << "Calling constructor for patch " << _id <<  "\n";
 
     };
-    ~patch(){
+    ~patch_t(){
         std::cout << "Calling destructor for patch " << _id <<  "\n";
         //delete[] times;
         
     };
 
     void init(){
-        task::init();
+        task_t::init();
         std::cout << "initializing patch " << _id <<  "\n";
 
 
@@ -46,9 +48,10 @@ class patch : public task{
 
     void deallocate(){
         std::cout << "deleting patch " << _id <<  "\n";
-       task::deallocate();
+       task_t::deallocate();
     }
    
 
 
 };
+#endif
