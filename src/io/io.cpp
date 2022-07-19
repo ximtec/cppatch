@@ -180,7 +180,7 @@ class io_t{
     std::map<std::string, std::map<std::string,std::string> > params;
 
     std::regex name_reg("&[a-zA-Z]+_params");
-    std::regex param_reg("[a-zA-Z]+=[TF0-9., ]+");
+    std::regex param_reg("[a-zA-Z]+[ ]*=[TF0-9., ]+");
 
 
      for (auto match : matches){
@@ -200,11 +200,26 @@ class io_t{
             throw std::invalid_argument("More than 1 name for parameter given: \n\t " + match);
         }
 
+        std::map<std::string,std::string> params_tmp;
         searchStart =  match.cbegin();
         while(std::regex_search( searchStart, match.cend(), res, param_reg )){
             std::string param = res[0];
             std::cout << param << std::endl;
             searchStart = res.suffix().first;
+
+            size_t equal_pos = param.find_first_of('='); 
+
+            std::string param_name = param.substr(0,equal_pos);
+            std::string param_val  = param.substr(equal_pos+1);
+
+            auto it1 = std::remove(param_name.begin(),param_name.end(),' ');
+            param_name.erase(it1, param_name.end());
+
+            auto it2 = std::remove(param_val.begin(),param_val.end(),' ');
+            param_val.erase(it2, param_val.end());
+
+            std::cout << "param_name |" <<  param_name << "|" << std::endl;
+            std::cout << "param_val |" <<  param_val << "|" << std::endl;
 
             //TODO split string and save everything in dictionary
         }
