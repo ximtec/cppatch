@@ -25,7 +25,7 @@ int main(int argc, char const *argv[]) {
     }
     std::cout<<"\n";
 
-    task_list_t t_l = task_list();
+    task_list_t t_l = task_list_t();
 
     //io_glob.read_input("input.nml");
     io_glob.read_regex("input.nml");

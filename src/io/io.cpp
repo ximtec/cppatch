@@ -5,6 +5,10 @@
 #include <vector>
 #include <algorithm>
 #include <regex> 
+#include <map>
+#include <stdexcept>
+
+
 
 const std::string WHITESPACE = " \n\r\t\f\v";
  
@@ -135,9 +139,9 @@ class io_t{
 
     std::string line;
 
+    //load each line, remove comments, and remove redundant whitespaces
     while (std::getline(fin,line)){
             //std::cout << line << std::endl;
-
             //remove comments
             size_t start = line.find_first_of('#'); 
             line =  (start == std::string::npos) ? line : line.substr(0,start);
@@ -149,50 +153,71 @@ class io_t{
 
             str += line + "\n";
     }
-
-    //if(fin){
-    //  std::ostringstream ss;
-    //  ss << fin.rdbuf(); // reading data
-    //  str = ss.str();
-    //}
+    fin.close();
     //std::cout << str << std::endl;
 
-    fin.close();
-
-
-    std::regex regxp("&[a-z_A-Z0-9 =\n]*?;");
-
+    //find each
+    std::regex regxp("&[a-z_A-Z0-9 =\n,.]*?;");
     std::smatch res;
-
     std::vector <std::string> matches;
-
     std::string::const_iterator searchStart( str.cbegin() );
     while ( std::regex_search( searchStart, str.cend(), res, regxp ) )
     {
         std::string match =  res[0];
-
+        //std::cout << match << std::endl;
 
         std::replace(match.begin(),match.end(),'\n',' '); //change newline to space
         std::replace(match.begin(),match.end(),';',' ');  //remove the ; and replace with space
-        match = trim(match); //remove trailing whitespace
-
-
+        match = trim(match); //remove trailing whitespac
         //std::cout << match << std::endl;  
         //std::cout << ( searchStart == str.cbegin() ? "" : " " ) << res[0] << std::endl;  
-
         searchStart = res.suffix().first;
-
         matches.push_back(match);
     }
 
 
-    for (auto res : matches){
-        std::cout << res << std::endl;
+
+    std::map<std::string, std::map<std::string,std::string> > params;
+
+    std::regex name_reg("&[a-zA-Z]+_params");
+    std::regex param_reg("[a-zA-Z]+=[TF0-9., ]+");
+
+
+     for (auto match : matches){
+
+        std::cout << match << std::endl;
+
+        std::string::const_iterator searchStart( match.cbegin() );
+        int i = 0;
+        while(std::regex_search( searchStart, match.cend(), res, name_reg )){
+            std::string name = res[0];
+            name.erase(0,1);
+            std::cout << name << std::endl;
+            searchStart = res.suffix().first;
+            i++;
+        }
+        if (i != 1){
+            throw std::invalid_argument("More than 1 name for parameter given: \n\t " + match);
+        }
+
+        searchStart =  match.cbegin();
+        while(std::regex_search( searchStart, match.cend(), res, param_reg )){
+            std::string param = res[0];
+            std::cout << param << std::endl;
+            searchStart = res.suffix().first;
+
+            //TODO split string and save everything in dictionary
+        }
+
+
+
     }
+
     }
+
 
 };
 
 
 
-io io_glob = io();
+io_t io_glob = io_t();
