@@ -185,14 +185,16 @@ class io_t{
 
      for (auto match : matches){
 
-        std::cout << match << std::endl;
+        //std::cout << match << std::endl;
 
         std::string::const_iterator searchStart( match.cbegin() );
         int i = 0;
+        std::string name;
+
         while(std::regex_search( searchStart, match.cend(), res, name_reg )){
-            std::string name = res[0];
+            name = res[0];
             name.erase(0,1);
-            std::cout << name << std::endl;
+            //std::cout << name << std::endl;
             searchStart = res.suffix().first;
             i++;
         }
@@ -204,7 +206,7 @@ class io_t{
         searchStart =  match.cbegin();
         while(std::regex_search( searchStart, match.cend(), res, param_reg )){
             std::string param = res[0];
-            std::cout << param << std::endl;
+            //std::cout << param << std::endl;
             searchStart = res.suffix().first;
 
             size_t equal_pos = param.find_first_of('='); 
@@ -218,15 +220,34 @@ class io_t{
             auto it2 = std::remove(param_val.begin(),param_val.end(),' ');
             param_val.erase(it2, param_val.end());
 
-            std::cout << "param_name |" <<  param_name << "|" << std::endl;
-            std::cout << "param_val |" <<  param_val << "|" << std::endl;
+            //std::cout << "param_name |" <<  param_name << "|" << std::endl;
+            //std::cout << "param_val |" <<  param_val << "|" << std::endl;
 
+            params_tmp.insert(std::pair<std::string,std::string>(param_name,param_val));
             //TODO split string and save everything in dictionary
         }
+
+        //std::cout << "Loading parameters for: " << name << std::endl;
+        //std::for_each(params_tmp.begin(),params_tmp.end(), [](std::pair<std::string,std::string> pair){
+        //    std::cout << "Name is: " << pair.first << std::endl;
+        //    std::cout << "val is: " << pair.second << std::endl;
+//
+        //});
+
+        params.insert(std::pair<std::string, std::map<std::string,std::string>>(name, params_tmp));
 
 
 
     }
+
+        std::for_each(params.begin(),params.end(), [](std::pair<std::string,std::map<std::string,std::string>> pair){
+            std::cout << "Loading parameters for: " << pair.first << std::endl;
+
+            std::for_each(pair.second.begin(),pair.second.end(), [](std::pair<std::string,std::string> val){
+                std::cout << "Name is: " << val.first << " value is " << val.second << std::endl;
+
+            });
+        });
 
     }
 
