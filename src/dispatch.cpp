@@ -29,6 +29,11 @@ int main(int argc, char const *argv[]) {
 
     //io_glob.read_input("input.nml");
     io_glob.read_regex("input.nml");
+
+
+    int nt =  io_glob.check_value("task_params","nt",nt) ? nt : -1;
+    
+    std::cout << "nt = " << nt << std::endl;
 //
 //    for (int i = 0; i < 10; i++){
 //        t = (patch *)malloc(sizeof(patch));

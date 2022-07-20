@@ -13,12 +13,29 @@
 
 const std::string WHITESPACE = " \n\r\t\f\v";
  
+ bool is_whitespace(const char val){
+    return WHITESPACE.find(val) != std::string::npos;
+ }
+
 bool string_to_bool(const std::string &name, const std::string &s){
     if (not( s=="T" || s=="F")){
         throw std::invalid_argument("Could not cast variable " + name + " with input '" + s + "' to bool \n \t\t --- Must be either 'T' or 'F' ");
     }else{
         return s=="T";
     }
+}
+
+bool check_string_to_int(const std::string &name, const std::string &s){
+    std::stringstream ss(s);
+    int i;
+    if ((ss >> i).fail() || !(ss >> std::ws).eof())
+    {
+        throw std::invalid_argument("Could not cast variable " + name + " with input '" + s + "' to int");
+        return false;
+    }else {
+        return true;
+    }
+
 }
 
  //remove trailing whitespace from left
@@ -38,13 +55,22 @@ std::string trim(const std::string &s) {
     return rtrim(ltrim(s));
 }
 
-void prune(std::string &s){
-        auto it = std::unique(s.begin(), s.end(),
+std::string prune(const std::string &s){
+        std::string new_String = s;
+        auto it = std::unique(new_String.begin(), new_String.end(),
                     [](char const &lhs, char const &rhs) {
-                        return (lhs == rhs) && (lhs == ' ');
+                        return (lhs == rhs) && (is_whitespace(lhs)) ;
                     });
-        s.erase(it, s.end());
+        new_String.erase(it, new_String.end());
+        return new_String;
 }
+
+
+
+std::string remove_whitespaces(const std::string &s){
+    return prune(trim(s));
+}
+
 
 
 
@@ -53,8 +79,10 @@ class io_t{
         std::string input_file;
 
         std::string param_name = "io_params";
+
+        std::map<std::string, std::map<std::string,std::string> > params;
+
         bool verbose = false;
-        std::vector<std::string> param_vals = {GET_NAME(verbose)};
 
     public:
 
@@ -63,148 +91,52 @@ class io_t{
     ~io_t(){};
 
 
-    void read_input(std::string  file_name){
-        //std::ifstream in(file_name);
-        //std::string contents((std::istreambuf_iterator<char>(in)), 
-        //    std::istreambuf_iterator<char>());
-        //std::fstream newfile;
-//
-        //newfile.open("input.nml",std::ios::in); //open a file to perform read operation using file object
-        //if (newfile.is_open()){   //checking whether the file is open
-        //    std::string tp;
-        //    while(getline(newfile, tp)){ //read data from file object and put it into string.
-        //        std::cout << tp << "\n"; //print the data of the string
-        //    }
-        //    newfile.close(); //close the file object.
-        //}
-        //std::cout << contents;
-
-        this->input_file = file_name;
-        //std::cout << this->input_file << std::endl;
+    std::string read_file(){
         std::ifstream fin(this->input_file);
-        if (!fin) {
-            std::cout << "[Error][BifrostMesh] mesh: " << this->input_file << " read error!" << std::endl;
-            return;
-        }
+        std::string str;
         std::string line;
-        std::string multi_line;
-
-        std::stringstream line_stream;
-
-        std::vector <std::string> lines;
-        bool line_continue = false;
-
-        
+        //load each line, remove comments, and remove redundant whitespaces
         while (std::getline(fin,line)){
-            std::cout << "|" << line << "|" <<std::endl;
-            //Handle comments
-            if (line.find('#') != std::string::npos){
-                int comment_loc = line.find('#');
-                line = line.substr(0, comment_loc);
-            }
-            std::cout << "|" << line << "|" <<std::endl;
-
-            if ( (line.find(';') != std::string::npos)) {
-                if (line_continue) {
-                    multi_line += " " + line;
-                    multi_line = trim(multi_line);
-                    prune(multi_line);
-                    lines.push_back(multi_line);
-                    multi_line = "";
-                    line_continue = false;
-
-                }else{
-                    line = trim(line);
-                    prune(line);
-                    lines.push_back(line);
-                }
-
-            }else{
-                line_continue = true;
-                multi_line += line;
-            }
-
-
-            std::cout <<std::endl;
-
+                //std::cout << line << std::endl;
+                //remove comments
+                size_t start = line.find_first_of('#'); 
+                line =  (start == std::string::npos) ? line : line.substr(0,start);
+                //remove redundant whitespace
+                line = remove_whitespaces(line);
+                str += line + "\n";
         }
-        fin.close();
-
-        std::for_each(lines.begin(),lines.end(), [] (std::string s){
-            std::cout << s << std::endl;
-        });
-
-
-
-
-        //line = lines.back();
-        //std::cout <<  line << std::endl;
-
-    }
-
-    void read_regex(std::string  file_name){
-    this->input_file = file_name;
-
-    std::ifstream fin(this->input_file);
-
-
-    std::string str;
-
-    std::string line;
-
-    //load each line, remove comments, and remove redundant whitespaces
-    while (std::getline(fin,line)){
-            //std::cout << line << std::endl;
-            //remove comments
-            size_t start = line.find_first_of('#'); 
-            line =  (start == std::string::npos) ? line : line.substr(0,start);
-            //remove trailing whitespace
-            line = trim(line);
-            //remove multiple whitespace characters in a row
-            prune(line);
-            //std::cout << line << std::endl;
-
-            str += line + "\n";
-    }
-    fin.close();
-    //std::cout << str << std::endl;
-
-    //find each
-    std::regex regxp("&[a-z_A-Z0-9 =\n,.&]*?;");
-    std::smatch res;
-    std::vector <std::string> matches;
-    std::string::const_iterator searchStart( str.cbegin() );
-    while ( std::regex_search( searchStart, str.cend(), res, regxp ) )
-    {
-        std::string match =  res[0];
-        //std::cout << match << std::endl;
-
-        std::replace(match.begin(),match.end(),'\n',' '); //change newline to space
-        std::replace(match.begin(),match.end(),';',' ');  //remove the ; and replace with space
-        match = trim(match); //remove trailing whitespac
-        //std::cout << match << std::endl;  
-        //std::cout << ( searchStart == str.cbegin() ? "" : " " ) << res[0] << std::endl;  
-        searchStart = res.suffix().first;
-        matches.push_back(match);
+        return str;
     }
 
 
+    void find_params(std::string file, std::vector <std::string> &matches){
+        std::regex regxp("&[a-z_A-Z0-9 =\n,.&]*?;");
+        std::smatch res;
+        std::string::const_iterator searchStart( file.cbegin() );
+        while ( std::regex_search( searchStart, file.cend(), res, regxp ) )
+        {
+            std::string match =  res[0];
+            //std::cout << match << std::endl;
 
-    std::map<std::string, std::map<std::string,std::string> > params;
+            std::replace(match.begin(),match.end(),'\n',' '); //change newline to space
+            std::replace(match.begin(),match.end(),';',' ');  //remove the ; and replace with space
+            match = remove_whitespaces(match); //remove trailing whitespac
+            //std::cout << match << std::endl;  
+            //std::cout << ( searchStart == str.cbegin() ? "" : " " ) << res[0] << std::endl;  
+            searchStart = res.suffix().first;
+            matches.push_back(match);
+        }
+    }
 
-    std::regex name_reg("&[a-zA-Z]+_params");
-    std::regex param_reg("[a-zA-Z]+[ ]*=[a-zA-Z0-9., ]+");
 
-
-     for (auto match : matches){
-
-        //std::cout << match << std::endl;
-
-        std::string::const_iterator searchStart( match.cbegin() );
+    std::string get_param_class_name(std::string param_list){
+        std::regex name_reg("&[a-zA-Z]+_params");
+        std::smatch res;
+        std::string::const_iterator searchStart( param_list.cbegin() );
         int i = 0;
         std::string name;
 
-        while(std::regex_search( searchStart, match.cend(), res, name_reg )){
+        while(std::regex_search( searchStart, param_list.cend(), res, name_reg )){
             name = res[0];
             name.erase(0,1);
             //std::cout << name << std::endl;
@@ -212,12 +144,16 @@ class io_t{
             i++;
         }
         if (i != 1){
-            throw std::invalid_argument("More than 1 name for parameter given: \n\t " + match);
+            throw std::invalid_argument("More than 1 name for parameter given: \n\t " + param_list);
         }
+        return name;
+    }
 
-        std::map<std::string,std::string> params_tmp;
-        searchStart =  match.cbegin();
-        while(std::regex_search( searchStart, match.cend(), res, param_reg )){
+    void get_param_class_val(std::string param_list,std::map<std::string,std::string> &param_dict){
+        std::regex param_reg("[a-zA-Z]+[ ]*=[a-zA-Z0-9., ]+");
+        std::string::const_iterator searchStart =  param_list.cbegin();
+        std::smatch res;
+        while(std::regex_search( searchStart, param_list.cend(), res, param_reg )){
             std::string param = res[0];
             //std::cout << param << std::endl;
             searchStart = res.suffix().first;
@@ -233,57 +169,93 @@ class io_t{
             auto it2 = std::remove(param_val.begin(),param_val.end(),' ');
             param_val.erase(it2, param_val.end());
 
-            //std::cout << "param_name |" <<  param_name << "|" << std::endl;
-            //std::cout << "param_val |" <<  param_val << "|" << std::endl;
-
-            params_tmp.insert(std::pair<std::string,std::string>(param_name,param_val));
-            //TODO split string and save everything in dictionary
+            param_dict.insert(std::pair<std::string,std::string>(param_name,param_val));
         }
-
-        //std::cout << "Loading parameters for: " << name << std::endl;
-        //std::for_each(params_tmp.begin(),params_tmp.end(), [](std::pair<std::string,std::string> pair){
-        //    std::cout << "Name is: " << pair.first << std::endl;
-        //    std::cout << "val is: " << pair.second << std::endl;
-//
-        //});
-
-        params.insert(std::pair<std::string, std::map<std::string,std::string>>(name, params_tmp));
-
-
-
     }
 
-        std::for_each(params.begin(),params.end(), [](std::pair<std::string,std::map<std::string,std::string>> pair){
+    void print_all_params(){
+        std::for_each(this->params.begin(),this->params.end(), [](std::pair<std::string,std::map<std::string,std::string>> pair){
             std::cout << pair.first << ":" << std::endl;
-
             std::for_each(pair.second.begin(),pair.second.end(), [](std::pair<std::string,std::string> val){
                 std::cout<< "\t\t" << val.first << " = " << val.second << std::endl;
 
             });
         });
+    }
 
-        if (params.find("io_params") == params.end()){
 
-        }else{
-            bool test;
-            std::cout << "Found io_params" << std::endl;
 
-            std::map<std::string,std::string> params_tmp = params["io_params"];
-            
 
-            //std::istringstream(params_tmp["VERBOSE"]) >> test;
+    void read_regex(std::string  file_name){
+        this->input_file = file_name;
 
-            test = string_to_bool("VERBOSE", params_tmp["VERBOSE"]);
+        std::string file_content = this->read_file();
 
-            std::cout <<  test << std::endl;
+        //find each param list beginning with &xxx_params and ending with a ';'
+        std::vector <std::string> matches;
+        this->find_params(file_content,matches);
 
-            //params_tmp[]
-            //std::cout << GET_NAME(params) << std::endl;
-
+        //Find the name for each match, and each value given for that class param
+        //Then load everything into the global dictionary
+        for (auto match : matches){
+            std::string class_param_name = this->get_param_class_name(match);
+            std::map<std::string,std::string> params_dict;
+            this->get_param_class_val(match,params_dict);
+            this->params.insert(std::pair<std::string, std::map<std::string,std::string>>(class_param_name, params_dict));
         }
+
+
+
+
+
+        this->print_all_params();
+
+
+//        if (params.find("io_params") == params.end()){
+//
+//        }else{
+//            bool test;
+//            std::cout << "Found io_params" << std::endl;
+//
+//            std::map<std::string,std::string> params_tmp = params["io_params"];
+//            
+//
+//            //std::istringstream(params_tmp["VERBOSE"]) >> test;
+//
+//            test = string_to_bool("VERBOSE", params_tmp["VERBOSE"]);
+//
+//            std::cout <<  test << std::endl;
+//
+//            //params_tmp[]
+//            //std::cout << GET_NAME(params) << std::endl;
+//
+//        }
 
     }
 
+    bool check_value(std::string params_name, std::string val_name, int &val){
+        if (this->params.find(params_name) == this->params.end()){
+            return false;
+        } else {
+            std::map<std::string,std::string> params_tmp = params[params_name];
+            //int tmp = val + 1;
+            //std::cout << GET_NAME(&val) << "    " << tmp << std::endl;
+            if (params_tmp.find(val_name) == params_tmp.end()){
+                return false;
+            }else{
+
+                if (check_string_to_int(val_name,params_tmp[val_name])){
+                    std::stringstream ss(params_tmp[val_name]);
+                    ss >> val;
+                    return true;
+                }else{
+                    return false;
+                }
+            
+            }
+            return true;
+        }
+    }
 
 };
 
