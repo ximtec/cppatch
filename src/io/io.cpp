@@ -9,9 +9,18 @@
 #include <stdexcept>
 
 
+#define GET_NAME(val) (#val)
 
 const std::string WHITESPACE = " \n\r\t\f\v";
  
+bool string_to_bool(const std::string &name, const std::string &s){
+    if (not( s=="T" || s=="F")){
+        throw std::invalid_argument("Could not cast variable " + name + " with input '" + s + "' to bool \n \t\t --- Must be either 'T' or 'F' ");
+    }else{
+        return s=="T";
+    }
+}
+
  //remove trailing whitespace from left
 std::string ltrim(const std::string &s)
 {
@@ -42,6 +51,10 @@ void prune(std::string &s){
 class io_t{
     private:
         std::string input_file;
+
+        std::string param_name = "io_params";
+        bool verbose = false;
+        std::vector<std::string> param_vals = {GET_NAME(verbose)};
 
     public:
 
@@ -157,7 +170,7 @@ class io_t{
     //std::cout << str << std::endl;
 
     //find each
-    std::regex regxp("&[a-z_A-Z0-9 =\n,.]*?;");
+    std::regex regxp("&[a-z_A-Z0-9 =\n,.&]*?;");
     std::smatch res;
     std::vector <std::string> matches;
     std::string::const_iterator searchStart( str.cbegin() );
@@ -180,7 +193,7 @@ class io_t{
     std::map<std::string, std::map<std::string,std::string> > params;
 
     std::regex name_reg("&[a-zA-Z]+_params");
-    std::regex param_reg("[a-zA-Z]+[ ]*=[TF0-9., ]+");
+    std::regex param_reg("[a-zA-Z]+[ ]*=[a-zA-Z0-9., ]+");
 
 
      for (auto match : matches){
@@ -241,13 +254,33 @@ class io_t{
     }
 
         std::for_each(params.begin(),params.end(), [](std::pair<std::string,std::map<std::string,std::string>> pair){
-            std::cout << "Loading parameters for: " << pair.first << std::endl;
+            std::cout << pair.first << ":" << std::endl;
 
             std::for_each(pair.second.begin(),pair.second.end(), [](std::pair<std::string,std::string> val){
-                std::cout << "Name is: " << val.first << " value is " << val.second << std::endl;
+                std::cout<< "\t\t" << val.first << " = " << val.second << std::endl;
 
             });
         });
+
+        if (params.find("io_params") == params.end()){
+
+        }else{
+            bool test;
+            std::cout << "Found io_params" << std::endl;
+
+            std::map<std::string,std::string> params_tmp = params["io_params"];
+            
+
+            //std::istringstream(params_tmp["VERBOSE"]) >> test;
+
+            test = string_to_bool("VERBOSE", params_tmp["VERBOSE"]);
+
+            std::cout <<  test << std::endl;
+
+            //params_tmp[]
+            //std::cout << GET_NAME(params) << std::endl;
+
+        }
 
     }
 
