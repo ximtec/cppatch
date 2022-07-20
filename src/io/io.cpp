@@ -1,3 +1,6 @@
+#ifndef __IO
+#define __IO
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -17,7 +20,7 @@ const std::string WHITESPACE = " \n\r\t\f\v";
     return WHITESPACE.find(val) != std::string::npos;
  }
 
-bool string_to_bool(const std::string &name, const std::string &s){
+bool check_string_to_bool(const std::string &name, const std::string &s){
     if (not( s=="T" || s=="F")){
         throw std::invalid_argument("Could not cast variable " + name + " with input '" + s + "' to bool \n \t\t --- Must be either 'T' or 'F' ");
     }else{
@@ -82,7 +85,7 @@ class io_t{
 
         std::map<std::string, std::map<std::string,std::string> > params;
 
-        bool verbose = false;
+        bool verbose;
 
     public:
 
@@ -186,9 +189,7 @@ class io_t{
 
 
 
-    void read_regex(std::string  file_name){
-        this->input_file = file_name;
-
+    void parse_input(){
         std::string file_content = this->read_file();
 
         //find each param list beginning with &xxx_params and ending with a ';'
@@ -204,32 +205,18 @@ class io_t{
             this->params.insert(std::pair<std::string, std::map<std::string,std::string>>(class_param_name, params_dict));
         }
 
-
-
-
-
         this->print_all_params();
 
 
-//        if (params.find("io_params") == params.end()){
-//
-//        }else{
-//            bool test;
-//            std::cout << "Found io_params" << std::endl;
-//
-//            std::map<std::string,std::string> params_tmp = params["io_params"];
-//            
-//
-//            //std::istringstream(params_tmp["VERBOSE"]) >> test;
-//
-//            test = string_to_bool("VERBOSE", params_tmp["VERBOSE"]);
-//
-//            std::cout <<  test << std::endl;
-//
-//            //params_tmp[]
-//            //std::cout << GET_NAME(params) << std::endl;
-//
-//        }
+    }
+
+    void init(std::string  file_name){
+        std::string params_name = "io_params";
+
+        this->input_file = file_name;
+        this->parse_input();
+
+        this->verbose = this->check_value(params_name,"verbose",this->verbose) ? this->verbose : false;
 
     }
 
@@ -257,8 +244,34 @@ class io_t{
         }
     }
 
+        bool check_value(std::string params_name, std::string val_name, bool &val){
+        if (this->params.find(params_name) == this->params.end()){
+            return false;
+        } else {
+            std::map<std::string,std::string> params_tmp = params[params_name];
+            //int tmp = val + 1;
+            //std::cout << GET_NAME(&val) << "    " << tmp << std::endl;
+            if (params_tmp.find(val_name) == params_tmp.end()){
+                return false;
+            }else{
+
+                if (check_string_to_bool(val_name,params_tmp[val_name])){
+                    std::stringstream ss(params_tmp[val_name]);
+                    ss >> val;
+                    return true;
+                }else{
+                    return false;
+                }
+            
+            }
+            return true;
+        }
+    }
+
 };
 
 
 
 io_t io_glob = io_t();
+
+#endif
