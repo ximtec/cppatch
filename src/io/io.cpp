@@ -153,7 +153,7 @@ class io_t{
     }
 
     void get_param_class_val(std::string param_list,std::map<std::string,std::string> &param_dict){
-        std::regex param_reg("[a-zA-Z]+[ ]*=[a-zA-Z0-9., ]+");
+        std::regex param_reg("[a-zA-Z]+[ ]*=[ ]*[a-zA-Z0-9.]+(?:,[ ]*[a-zA-Z0-9.]+)*");
         std::string::const_iterator searchStart =  param_list.cbegin();
         std::smatch res;
         while(std::regex_search( searchStart, param_list.cend(), res, param_reg )){
