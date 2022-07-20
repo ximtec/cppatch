@@ -36,7 +36,10 @@ class patch_t : public task_t{
 
     void init(){
         task_t::init();
-        std::cout << "initializing patch " << _id <<  "\n";
+
+        if (io_verbose >= 2){
+            std::cout << "initializing patch " << _id <<  "\n";
+        }
 
 
     }

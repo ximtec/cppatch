@@ -3,13 +3,14 @@
 
 #include <iostream>
 #include <atomic>
+#include "../io/io.cpp"
 
 class task_t {
     protected:
         int _id;
         int curr;
         int next;
-
+        int nt;
         double* times;
         double dt;
 
@@ -23,21 +24,36 @@ class task_t {
 
 
     task_t(){
-            std::cout << "Calling constructor for task " << _id <<  "\n";
+            if (io_verbose){
+                std::cout << "Calling constructor for task " << this->_id <<  "\n";
+            }
             this->init();
     }
 
     ~task_t(){
-            std::cout << "Calling destructor for task " << _id <<  "\n";
+            if (io_verbose){
+                std::cout << "Calling destructor for task " << this->_id <<  "\n";
+            }
            //delete[] times;
     }
+    
 
     void init(){
-        _id=nr_tasks++;
-        std::cout << "initializing task " << _id <<  "\n";
-        //time = 0.;
+        std::string params_name = "task_params";
+        this->_id=nr_tasks++;
+            if (io_verbose  >= 2 ){
+        std::cout << "initializing task " << this->_id <<  "\n";
+            }
         dt = 0.1;
-        times = new double[5];
+
+        this->nt = io_glob.check_value(params_name,"nt",this->nt) ? this->nt : 5;
+
+        this->times = new double[nt];
+        this->curr = 0;
+        this->next = 1;
+        times[curr] = 0.0;
+
+        
     }
 
     void deallocate(){

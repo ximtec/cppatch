@@ -14,6 +14,8 @@
 
 #define GET_NAME(val) (#val)
 
+int io_verbose;
+
 const std::string WHITESPACE = " \n\r\t\f\v";
  
  bool is_whitespace(const char val){
@@ -33,6 +35,9 @@ bool check_string_to_int(const std::string &name, const std::string &s){
     int i;
     if ((ss >> i).fail() || !(ss >> std::ws).eof())
     {
+        if (s == "T" || s == "F"){
+            return s=="T";
+        }
         throw std::invalid_argument("Could not cast variable " + name + " with input '" + s + "' to int");
         return false;
     }else {
@@ -84,8 +89,6 @@ class io_t{
         std::string param_name = "io_params";
 
         std::map<std::string, std::map<std::string,std::string> > params;
-
-        bool verbose;
 
     public:
 
@@ -205,7 +208,6 @@ class io_t{
             this->params.insert(std::pair<std::string, std::map<std::string,std::string>>(class_param_name, params_dict));
         }
 
-        this->print_all_params();
 
 
     }
@@ -216,7 +218,11 @@ class io_t{
         this->input_file = file_name;
         this->parse_input();
 
-        this->verbose = this->check_value(params_name,"verbose",this->verbose) ? this->verbose : false;
+        io_verbose = this->check_value(params_name,"verbose",io_verbose) ? io_verbose : 0;
+
+        if (io_verbose >= 1) {
+            this->print_all_params();
+        }
 
     }
 
@@ -232,6 +238,8 @@ class io_t{
             }else{
 
                 if (check_string_to_int(val_name,params_tmp[val_name])){
+                    if (params_tmp[val_name] == "T") {val = 1; return true;}
+                    if (params_tmp[val_name] == "F") {val = 0; return true;}
                     std::stringstream ss(params_tmp[val_name]);
                     ss >> val;
                     return true;
@@ -254,17 +262,9 @@ class io_t{
             if (params_tmp.find(val_name) == params_tmp.end()){
                 return false;
             }else{
-
-                if (check_string_to_bool(val_name,params_tmp[val_name])){
-                    std::stringstream ss(params_tmp[val_name]);
-                    ss >> val;
-                    return true;
-                }else{
-                    return false;
-                }
-            
+                val = check_string_to_bool(val_name,params_tmp[val_name]);
+                return val;
             }
-            return true;
         }
     }
 

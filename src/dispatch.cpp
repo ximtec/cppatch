@@ -19,7 +19,7 @@ int main(int argc, char const *argv[]) {
 ;
     //int test = 5;
 
-//    patch *t;
+    patch_t *t;
     for (int i = 1; i< argc; i++){
         std::cout<<argv[i]<< " ";
     }
@@ -28,18 +28,17 @@ int main(int argc, char const *argv[]) {
     task_list_t t_l = task_list_t();
 
     //io_glob.read_input("input.nml");
-    io_glob.read_regex("input.nml");
+    io_glob.init("input.nml");
 
-
-    int nt =  io_glob.check_value("task_params","nt",nt) ? nt : -1;
+    //int nt =  io_glob.check_value("task_params","nt",nt) ? nt : -1;
     
-    std::cout << "nt = " << nt << std::endl;
+    //std::cout << "nt = " << nt << std::endl;
 //
-//    for (int i = 0; i < 10; i++){
-//        t = (patch *)malloc(sizeof(patch));
-//        t->init();
-//        t_l.add_ready_task(t);
-//    }
+    for (int i = 0; i < 10; i++){
+        t = (patch_t *)malloc(sizeof(patch_t));
+        t->init();
+        t_l.add_ready_task(t);
+    }
 //
 //    t_l.print_list_id();
 //
