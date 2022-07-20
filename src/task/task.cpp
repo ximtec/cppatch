@@ -46,7 +46,8 @@ class task_t {
             }
         dt = 0.1;
 
-        this->nt = io_glob.check_value(params_name,"nt",this->nt) ? this->nt : 5;
+        //try to read task_params nt=.. from the io dictionary - sets the default value to 5 if it can't find it.
+        this->nt = io_glob.check_value(params_name,"nt",this->nt) ? this->nt : 5; 
 
         this->times = new double[nt];
         this->curr = 0;

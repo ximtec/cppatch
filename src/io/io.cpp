@@ -22,6 +22,7 @@ const std::string WHITESPACE = " \n\r\t\f\v";
     return WHITESPACE.find(val) != std::string::npos;
  }
 
+
 void parse_value(const std::string &name, const std::string &s, bool &val){
     if (not( s=="T" || s=="F")){
         throw std::invalid_argument("Could not cast variable " + name + " with input '" + s + "' to bool \n \t\t --- Must be either 'T' or 'F' ");
@@ -40,6 +41,59 @@ void parse_value(const std::string &name, const std::string &s, int &val){
     }
 
 }
+
+void parse_value(const std::string &name, const std::string &s, int* val){
+    //std::string::const_iterator searchStart( file.cbegin() );
+
+    std::string tmp_str = s;
+    //std::cout << " " << name  << " "<< s << " " << val[0] << std::endl;
+
+    //std::string::const_iterator searchStart( s.cbegin() );
+
+    std::vector<std::string> dim_vals;    
+    //std::string delimiter_char = ",";
+    size_t pos = 0;
+    std::string token;
+    while ((pos = tmp_str.find(',')) != std::string::npos) {
+        //std::cout << tmp_str << " found pos" << pos << std::endl;
+        token = tmp_str.substr(0, pos);
+        tmp_str.erase(0, pos + 1);
+        dim_vals.push_back(token);
+    }
+    dim_vals.push_back(tmp_str);
+
+
+    if (dim_vals.size() > 3 || dim_vals.size() < 1){
+        throw std::invalid_argument("Could not cast variable " + name + " with input '" + s + "' to uint[3] \n \t\t ---- Takes between 1-3 arguments: fx. 16,16,16 or 16,16 or 16");
+    }
+
+    //std::cout << dim_vals.size() << std::endl;
+    int i = 0;
+    int tmp_val;
+
+    std::for_each(dim_vals.begin(), dim_vals.end(), [&name,&i,&val,&tmp_val] (const std::string &s_val){
+        int tmp_val;
+        parse_value(name, s_val, tmp_val);
+        val[i] = (uint) tmp_val;
+        i++;
+    });
+
+    //std::cout << "test " << s  << " " << i << std::endl;
+    if (i == 1){ //if only 1 value is given, assume 3D with equal size in each dimension
+        val[1] = val[0]; 
+        val[2] = val[0]; 
+    }else if (i == 2) //if only 2 values are given, assume 2D with third dimension being 1
+    {
+        val[2] = 1;
+    }
+    
+    //std::cout << " " << name  << " "<< s << " " << val[0] << i << std::endl;
+
+
+    
+
+}
+
 
  //remove trailing whitespace from left
 std::string ltrim(const std::string &s)
@@ -151,7 +205,8 @@ class io_t{
     }
 
     void get_param_class_val(std::string param_list,std::map<std::string,std::string> &param_dict){
-        std::regex param_reg("[a-zA-Z]+[ ]*=[ ]*[a-zA-Z0-9.]+(?:,[ ]*[a-zA-Z0-9.]+)*");
+        //std::regex param_reg("[a-zA-Z]+[ ]*=[ ]*[a-zA-Z0-9.]+(?:,[ ]*[a-zA-Z0-9.]+)*");
+        std::regex param_reg("[a-zA-Z]+ *= *[0-9TF.]*[ *, *[0-9]*]*");
         std::string::const_iterator searchStart =  param_list.cbegin();
         std::smatch res;
         while(std::regex_search( searchStart, param_list.cend(), res, param_reg )){
@@ -221,10 +276,10 @@ class io_t{
 
     }
 
-        template< class T>
-        bool check_value(std::string params_name, std::string val_name, T &val){
-            std::map<std::string,std::string> params_tmp;
-            bool res; 
+    template< class T>
+    bool check_value(std::string params_name, std::string val_name, T &val){
+        std::map<std::string,std::string> params_tmp;
+        bool res; 
 
         if (this->params.find(params_name) == this->params.end()){ //no param given for class
             res = false;
