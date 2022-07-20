@@ -22,26 +22,21 @@ const std::string WHITESPACE = " \n\r\t\f\v";
     return WHITESPACE.find(val) != std::string::npos;
  }
 
-bool check_string_to_bool(const std::string &name, const std::string &s){
+void parse_value(const std::string &name, const std::string &s, bool &val){
     if (not( s=="T" || s=="F")){
         throw std::invalid_argument("Could not cast variable " + name + " with input '" + s + "' to bool \n \t\t --- Must be either 'T' or 'F' ");
     }else{
-        return s=="T";
+        val =  s=="T";
     }
 }
 
-bool check_string_to_int(const std::string &name, const std::string &s){
+void parse_value(const std::string &name, const std::string &s, int &val){
     std::stringstream ss(s);
-    int i;
-    if ((ss >> i).fail() || !(ss >> std::ws).eof())
+    if ((ss >> val).fail() || !(ss >> std::ws).eof())
     {
-        if (s == "T" || s == "F"){
-            return s=="T";
-        }
+        if (s == "T") { val = 1; return ;}
+        if (s == "F") { val = 0; return ;}
         throw std::invalid_argument("Could not cast variable " + name + " with input '" + s + "' to int");
-        return false;
-    }else {
-        return true;
     }
 
 }
@@ -226,46 +221,23 @@ class io_t{
 
     }
 
-    bool check_value(std::string params_name, std::string val_name, int &val){
-        if (this->params.find(params_name) == this->params.end()){
-            return false;
-        } else {
-            std::map<std::string,std::string> params_tmp = params[params_name];
-            //int tmp = val + 1;
-            //std::cout << GET_NAME(&val) << "    " << tmp << std::endl;
-            if (params_tmp.find(val_name) == params_tmp.end()){
-                return false;
-            }else{
+        template< class T>
+        bool check_value(std::string params_name, std::string val_name, T &val){
+            std::map<std::string,std::string> params_tmp;
+            bool res; 
 
-                if (check_string_to_int(val_name,params_tmp[val_name])){
-                    if (params_tmp[val_name] == "T") {val = 1; return true;}
-                    if (params_tmp[val_name] == "F") {val = 0; return true;}
-                    std::stringstream ss(params_tmp[val_name]);
-                    ss >> val;
-                    return true;
-                }else{
-                    return false;
-                }
-            
-            }
-            return true;
-        }
-    }
-
-        bool check_value(std::string params_name, std::string val_name, bool &val){
-        if (this->params.find(params_name) == this->params.end()){
-            return false;
+        if (this->params.find(params_name) == this->params.end()){ //no param given for class
+            res = false;
         } else {
-            std::map<std::string,std::string> params_tmp = params[params_name];
-            //int tmp = val + 1;
-            //std::cout << GET_NAME(&val) << "    " << tmp << std::endl;
-            if (params_tmp.find(val_name) == params_tmp.end()){
-                return false;
+            params_tmp = params[params_name];
+            if (params_tmp.find(val_name) == params_tmp.end()){ //no param given for varaible
+                res = false;
             }else{
-                val = check_string_to_bool(val_name,params_tmp[val_name]);
-                return val;
+                res = true;
+                parse_value(val_name,params_tmp[val_name],val);
             }
         }
+        return res;
     }
 
 };
