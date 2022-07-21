@@ -42,9 +42,9 @@ class patch_t : public task_t{
 
     void init(){
         task_t::init();
-        std::map <std::string, std::any> maps{
-            {"n", dims.n},
-            {"ng", dims.ng}
+        std::map <std::string, input_token> input_maps{
+            {"n", input_token{dims.n, "int[3]",3 }},
+            {"ng",input_token{dims.ng, "int[3]",3 }}
         };
         std::string params_name = "patch_params";
         if (io_verbose >= 2){
@@ -54,7 +54,7 @@ class patch_t : public task_t{
         std::fill_n(dims.n,3,16);
         std::fill_n(dims.ng,3,3);
 
-        io_glob.parse_vars(params_name,maps,_id==0);
+        io_glob.parse_vars(params_name,input_maps,_id==0);
 
         //if (io_verbose >= 2){
         //    std::cout << " n = " << dims.n[0] << ", " << dims.n[1] << ", " << dims.n[2] << std::endl;

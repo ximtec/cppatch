@@ -40,14 +40,22 @@ class task_t {
 
     void init(){
         std::string params_name = "task_params";
+        std::map <std::string, input_token> input_maps{
+            {"nt", input_token{&nt, "int",1 }},
+        };
+
         this->_id=nr_tasks++;
-            if (io_verbose  >= 2 ){
+        if (io_verbose  >= 2 ){
         std::cout << "initializing task " << this->_id <<  "\n";
-            }
+        }
         dt = 0.1;
 
         //try to read task_params nt=.. from the io dictionary - sets the default value to 5 if it can't find it.
-        this->nt = io_glob.check_value(params_name,"nt",this->nt) ? this->nt : 5; 
+        //this->nt = io_glob.check_value(params_name,"nt",this->nt) ? this->nt : 5; 
+
+        this->nt = 5;
+        io_glob.parse_vars(params_name,input_maps,_id==0);
+
 
         this->times = new double[nt];
         this->curr = 0;

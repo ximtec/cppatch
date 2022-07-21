@@ -16,6 +16,15 @@
 
 int io_verbose;
 
+
+struct input_token{
+    input_token(void* in_ptr, std::string in_type, int in_size)
+         : ptr(in_ptr), type(in_type), size(in_size) {}
+    void * ptr;
+    std::string type;
+    int size;
+};
+
 const std::string WHITESPACE = " \n\r\t\f\v";
  
  //Check if a character is whitespace
@@ -283,28 +292,33 @@ class io_t{
 
 
     //Parse all variables in the dictionary
-    void parse_vars(const std::string params_name,std::map <std::string, std::any> &maps, bool is_first=true){
-
-        std::for_each(maps.begin(),maps.end(), [this,params_name,is_first] (std::pair<std::string,std::any> pair){
+    void parse_vars(const std::string params_name,std::map <std::string, input_token> &maps, bool is_first=true){
+        std::for_each(maps.begin(),maps.end(), [this,params_name,is_first] (std::pair<std::string,input_token> pair){
             
-            if ( pair.second.type() == typeid(int*)){  //If the variable is an integer array
-                int* val = std::any_cast<int*>(pair.second);
+            if ( pair.second.type == "int[3]"){  //If the variable is an integer array
+                int* val = (int*) pair.second.ptr;
                 bool read_succ = this->check_value(params_name,pair.first, val);
-                this->print_pars_var(params_name,pair.first,pair.second,read_succ,is_first,1);
-            } 
+                this->print_pars_var(params_name,pair.first,pair.second.ptr,read_succ,is_first,1);
+            } else if(pair.second.type == "int"){
+                int* val = (int*) pair.second.ptr;
+                bool read_succ = this->check_value(params_name,pair.first, val);
+                this->print_pars_var(params_name,pair.first,pair.second.ptr,read_succ,is_first,2);
+            }
+
+            
                 
         });
     }
 
 
     //Function to print parsed variables
-    void print_pars_var(std::string params_name, std::string var_name, std::any &val, bool succ, bool is_first, int type_nr){
+    void print_pars_var(std::string params_name, std::string var_name, void* val, bool succ, bool is_first, int type_nr){
         if (io_verbose >= 1 && is_first){
             switch (type_nr)
             {
             case 1: // int arr
                 { //mu
-                int* tmp_val = std::any_cast<int*>(val);
+                int* tmp_val = (int*)val;
                 if (succ){
                     std::cout << "Read input variable: " << params_name << ": " << var_name << " with values \n \t\t " << tmp_val[0] << " " << tmp_val[1] << " " << tmp_val[2] << std::endl;
                 }else{
@@ -314,7 +328,7 @@ class io_t{
                 break;
             case 2: // int
                 {
-                int tmp_val = std::any_cast<int>(val);
+                int tmp_val = *(int*)val;
                 if (succ){
                     std::cout << "Read input variable: " << params_name << ": " << var_name << " with value \n \t\t " << tmp_val << std::endl;
                 }else{
