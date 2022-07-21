@@ -6,6 +6,7 @@
 #include <any>
 
 
+
 struct patch_dim{
     int  lb[3];
     int  lo[3];
@@ -16,6 +17,8 @@ struct patch_dim{
     int  ng[3];
     int   n[3];
 };
+
+
 
 class patch_t : public task_t{
     protected:
@@ -39,46 +42,24 @@ class patch_t : public task_t{
 
     void init(){
         task_t::init();
-        //std::map <std::string,std::pair<const std::type_info &, void*>> maps = {
-        //    {"n" ,  {typeid(dims.n), dims.n }},
-        //    {"ng" , {typeid(int), dims.ng}}
-        //    //{"ng" , {typeid(dims.ng), &dims.ng}}
-        //};
-
         std::map <std::string, std::any> maps{
             {"n", dims.n},
             {"ng", dims.ng}
         };
-
         std::string params_name = "patch_params";
-
         if (io_verbose >= 2){
             std::cout << "initializing patch " << _id <<  "\n";
         }
-
-
+        //set default input parameter values
         std::fill_n(dims.n,3,16);
         std::fill_n(dims.ng,3,3);
 
-        std::for_each(maps.begin(),maps.end(), [params_name] (std::pair<std::string,std::any> pair){
-                if ( pair.second.type() == typeid(int*)){
-                    int* val = std::any_cast<int*>(pair.second);
-                    bool read_succ = io_glob.check_value(params_name,pair.first, val);
+        io_glob.parse_vars(params_name,maps,_id==0);
 
-                    if ( read_succ){
-                        if (io_verbose >= 2){
-                            std::cout << "Read input variables for value " << pair.first << " " << val[0] << " " << val[1] << " " << val[2] << std::endl;
-                        }
-                    }
-
-                } 
-                
-        });
-
-        if (io_verbose >= 2){
-            std::cout << " n = " << dims.n[0] << ", " << dims.n[1] << ", " << dims.n[2] << std::endl;
-            std::cout << " ng = " << dims.ng[0] << ", " << dims.ng[1] << ", " << dims.ng[2] << std::endl;
-        }
+        //if (io_verbose >= 2){
+        //    std::cout << " n = " << dims.n[0] << ", " << dims.n[1] << ", " << dims.n[2] << std::endl;
+        //    std::cout << " ng = " << dims.ng[0] << ", " << dims.ng[1] << ", " << dims.ng[2] << std::endl;
+        //}
 
 
     }
