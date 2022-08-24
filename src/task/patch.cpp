@@ -4,7 +4,9 @@
 #include <vector>
 #include <typeinfo>
 #include <any>
+#include "../data_wrappers/data_1d_float.cpp"
 
+//using namespace data;
 
 
 struct patch_dim{
@@ -23,7 +25,7 @@ struct patch_dim{
 class patch_t : public task_t{
     protected:
         patch_dim dims;
-
+        data_1d_float mem;
 
 
     public: 
@@ -55,6 +57,13 @@ class patch_t : public task_t{
         std::fill_n(dims.ng,3,3);
 
         io_glob.parse_vars(params_name,input_maps,_id==0);
+
+
+       if (io_verbose >= 2){
+            std::cout << "Initializing patch memory " << _id <<  "\n";
+        }
+        mem = data_1d_float(dims.n[0]*dims.n[1]*dims.n[2]);
+
 
         //if (io_verbose >= 2){
         //    std::cout << " n = " << dims.n[0] << ", " << dims.n[1] << ", " << dims.n[2] << std::endl;
